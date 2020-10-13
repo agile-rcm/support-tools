@@ -1,7 +1,7 @@
-# Onboarding Tools Lib
+# Support Tools Lib
 
-Onboarding tools and utilities for various tools like Atlassian, Sonytype, SonarQube etc.
+Support tools and utilities for various tools like Atlassian, Sonatype, SonarQube etc.
 
 # This is a library
 
-So stand-alones found here. You can use it as a GO module in your projets.
+So no stand-alones found here. You can use it as a GO module in your projects.
