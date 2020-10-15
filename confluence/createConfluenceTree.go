@@ -4,7 +4,6 @@ package confluence
 
 import (
 	"fmt"
-	"git.agiletech.de/AgileRCM/support-tools/context"
 	"io/ioutil"
 	"log"
 	"path/filepath"
@@ -13,42 +12,17 @@ import (
 	"time"
 )
 
-func WalkDirAndCreate(ctx context.Context, directoryName string, confluenceParentPage string, minorEdit bool, timestamp bool) error {
+func WalkDirAndCreate(userId string, password string, endpoint string, insecure bool, debug bool, directoryName string, confluenceParentPage string, minorEdit bool, timestamp bool, spacekey string) error {
 	if directoryName != "/" && directoryName[len(directoryName)-1:] == "/" {
 		directoryName = directoryName[:len(directoryName)-1]
 	}
 
 	a := []string{}
-	WalkDirAndCreateRecursive(ctx, directoryName, a, 0, confluenceParentPage, minorEdit, timestamp)
+	WalkDirAndCreateRecursive(userId, password, endpoint, insecure, debug, directoryName, a, 0, confluenceParentPage, minorEdit, timestamp, spacekey)
 	return nil
 }
 
-func processed(fileName string, processedDirectories []string) bool {
-	for i := 0; i < len(processedDirectories); i++ {
-		if processedDirectories[i] != fileName {
-			continue
-		}
-		return true
-	}
-	return false
-}
-
-func getContentString(pageName string, timestamp bool) string {
-
-	contentBuffer, err := ioutil.ReadFile(pageName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	contentString := string(contentBuffer)
-	if timestamp {
-		timeStampTxt := time.Now().String()
-		contentString = "<p>" + timeStampTxt + "</p>" + contentString
-	}
-	return contentString
-}
-
-func WalkDirAndCreateRecursive(
-	ctx context.Context, directoryName string, dirs []string, counter int, anchestor string, minorEdit bool, timestamp bool) {
+func WalkDirAndCreateRecursive(userId string, password string, endpoint string, insecure bool, debug bool, directoryName string, dirs []string, counter int, anchestor string, minorEdit bool, timestamp bool, spacekey string) {
 
 	// formattedOutput := fmt.Sprintf("%-60s%-50s%-50s", directoryName, anchestor, dirs)
 	// formattedOutput := fmt.Sprintf("%-60s%-50s", directoryName, anchestor)
@@ -83,11 +57,11 @@ func WalkDirAndCreateRecursive(
 				//   | + folderB
 				//     | - folderB.html   <<========
 				//
-				CreatePage(ctx, anchestor, pageName, contentString, minorEdit)
+				CreatePage(userId, password, endpoint, insecure, debug, anchestor, pageName, contentString, minorEdit, spacekey)
 				// go into this folder
 				anchestorOld := anchestor
 				anchestor = pageName
-				WalkDirAndCreateRecursive(ctx, newPath, dirs, counter, anchestor, minorEdit, timestamp)
+				WalkDirAndCreateRecursive(userId, password, endpoint, insecure, debug, newPath, dirs, counter, anchestor, minorEdit, timestamp, spacekey)
 				anchestor = anchestorOld
 			}
 		} else {
@@ -113,9 +87,33 @@ func WalkDirAndCreateRecursive(
 
 				//			formattedOutput = fmt.Sprintf("\n\na/p: %-60s%-50s\n\n", anchestor, pageName)
 				//			fmt.Println(formattedOutput)
-				CreatePage(ctx, anchestor, pageName, contentString, minorEdit)
+				CreatePage(userId, password, endpoint, insecure, debug, anchestor, pageName, contentString, minorEdit, spacekey)
 			}
 
 		}
 	}
+}
+
+func processed(fileName string, processedDirectories []string) bool {
+	for i := 0; i < len(processedDirectories); i++ {
+		if processedDirectories[i] != fileName {
+			continue
+		}
+		return true
+	}
+	return false
+}
+
+func getContentString(pageName string, timestamp bool) string {
+
+	contentBuffer, err := ioutil.ReadFile(pageName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	contentString := string(contentBuffer)
+	if timestamp {
+		timeStampTxt := time.Now().String()
+		contentString = "<p>" + timeStampTxt + "</p>" + contentString
+	}
+	return contentString
 }

@@ -9,4 +9,6 @@ require (
 	github.com/tealeg/xlsx v1.0.5
 	github.com/urfave/cli v1.22.4
 	github.com/virtomize/confluence-go-api v1.2.5
+	gorm.io/driver/postgres v1.0.2
+	gorm.io/gorm v1.20.2
 )

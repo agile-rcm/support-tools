@@ -44,7 +44,7 @@ func GenerateNewCsvByIndex(filepath string, sheetIndex int, outputf outputerInde
 
 }
 
-func GenerateNewCsvAll(filepath string, delimiter string, outputf outputer) error {
+func GenerateNewCsvAll(filepath string, delimiter string, outputf outputer, regex string) error {
 
 	f, err := excelize.OpenFile(filepath)
 	if err != nil {
@@ -59,7 +59,8 @@ func GenerateNewCsvAll(filepath string, delimiter string, outputf outputer) erro
 	for i := 1; i <= numSheets; i++ {
 		sheetname := f.GetSheetName(i)
 
-		if false && !validateTeamSheet(sheetname) {
+		//TODO: Was passiert hier? Warum "false &&..." ?
+		if false && !validateTeamSheet(sheetname, regex) {
 			fmt.Printf("Sheetname: %s with index %s does not match the regexp -> skipping \n", sheetname, strconv.Itoa(i))
 		} else {
 			fmt.Printf("Sheetname: %s with index %s matches regexp -> generating CSV file \n", sheetname, strconv.Itoa(i))
@@ -94,14 +95,14 @@ func GenerateNewCsvAll(filepath string, delimiter string, outputf outputer) erro
 	return nil
 }
 
-func validateTeamSheet(sheetname string) bool {
+func validateTeamSheet(sheetname string, regex string) bool {
 
-	RegExp := regexp.MustCompile(`^([Tt][eam-]|[Ee]xternals|[Pp]roject)`)
+	RegExp := regexp.MustCompile(regex)
 
 	return RegExp.MatchString(sheetname)
 }
 
-func testForEmptyCells(filepath string) error {
+func testForEmptyCells(filepath string, regex string) error {
 	f, err := excelize.OpenFile(filepath)
 	if err != nil {
 		fmt.Println(err)
@@ -115,7 +116,7 @@ func testForEmptyCells(filepath string) error {
 	for i := 1; i <= numSheets; i++ {
 		sheetname := f.GetSheetName(i)
 
-		if !validateTeamSheet(sheetname) {
+		if !validateTeamSheet(sheetname, regex) {
 			fmt.Printf("Sheetname: %s with index %s does not match the regexp -> skipping \n", sheetname, strconv.Itoa(i))
 		} else {
 		}
