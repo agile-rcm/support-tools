@@ -3,8 +3,9 @@ package tools
 import (
 	"errors"
 	"fmt"
-	"github.com/360EntSecGroup-Skylar/excelize"
+	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/tealeg/xlsx"
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -93,6 +94,61 @@ func GenerateNewCsvAll(filepath string, delimiter string, outputf outputer, rege
 	}
 
 	return nil
+}
+
+func GetBlockByCoords(filepath string, findRow string, findCol string) ([]string, error) {
+
+	f, err := excelize.OpenFile(filepath)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	rows, err := f.GetRows("Project")
+	if err != nil {
+		fmt.Println(err)
+		log.Fatal("cannot open sheet")
+	}
+
+	cols, err := f.GetCols("Project")
+	if err != nil {
+		fmt.Println(err)
+		log.Fatal("cannot open sheet")
+	}
+
+	var returnArray []string
+	var targetCol int
+
+	for x, row := range rows {
+
+		if len(row) != 0 && row[0] == findRow {
+
+			for a, col := range cols {
+				if len(col) != 0 && col[x] == findCol {
+					targetCol = a
+				}
+			}
+
+			for i, innerRow := range rows {
+
+				if i <= x {
+					continue
+				}
+
+				if len(innerRow) != 0 {
+					returnArray = append(returnArray, innerRow[targetCol])
+					fmt.Print(innerRow[targetCol], "\n")
+				} else {
+					break
+				}
+			}
+		} else {
+			continue
+		}
+	}
+
+	return returnArray, nil
+
 }
 
 func validateTeamSheet(sheetname string, regex string) bool {
