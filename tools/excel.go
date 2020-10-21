@@ -61,7 +61,7 @@ func GenerateNewCsvAll(filepath string, delimiter string, outputf outputer, rege
 		sheetname := f.GetSheetName(i)
 
 		//TODO: Was passiert hier? Warum "false &&..." ?
-		if false && !validateTeamSheet(sheetname, regex) {
+		if false && !validateSheetName(sheetname, regex) {
 			fmt.Printf("Sheetname: %s with index %s does not match the regexp -> skipping \n", sheetname, strconv.Itoa(i))
 		} else {
 			fmt.Printf("Sheetname: %s with index %s matches regexp -> generating CSV file \n", sheetname, strconv.Itoa(i))
@@ -96,7 +96,7 @@ func GenerateNewCsvAll(filepath string, delimiter string, outputf outputer, rege
 	return nil
 }
 
-func GetBlockByCoords(filepath string, findRow string, findCol string) ([]string, error) {
+func GetBlockByCoords(filepath string, findRow string, findCol string, sheet string) ([]string, error) {
 
 	f, err := excelize.OpenFile(filepath)
 	if err != nil {
@@ -104,13 +104,13 @@ func GetBlockByCoords(filepath string, findRow string, findCol string) ([]string
 		return nil, err
 	}
 
-	rows, err := f.GetRows("Project")
+	rows, err := f.GetRows(sheet)
 	if err != nil {
 		fmt.Println(err)
 		log.Fatal("cannot open sheet")
 	}
 
-	cols, err := f.GetCols("Project")
+	cols, err := f.GetCols(sheet)
 	if err != nil {
 		fmt.Println(err)
 		log.Fatal("cannot open sheet")
@@ -151,11 +151,32 @@ func GetBlockByCoords(filepath string, findRow string, findCol string) ([]string
 
 }
 
-func validateTeamSheet(sheetname string, regex string) bool {
+func validateSheetName(sheetname string, regex string) bool {
 
 	RegExp := regexp.MustCompile(regex)
 
 	return RegExp.MatchString(sheetname)
+}
+
+func GetAllSheetsRegex(filepath string, regex string) (error, []string) {
+
+	f, err := excelize.OpenFile(filepath)
+	if err != nil {
+		fmt.Println(err)
+		return err, nil
+	}
+
+	sheets := f.GetSheetList()
+
+	var validatedSheets  []string
+
+	for _, sheet := range sheets {
+		if validateSheetName(sheet, regex) {
+			validatedSheets = append(validatedSheets, sheet)
+		}
+	}
+
+	return nil, validatedSheets
 }
 
 func testForEmptyCells(filepath string, regex string) error {
@@ -172,7 +193,7 @@ func testForEmptyCells(filepath string, regex string) error {
 	for i := 1; i <= numSheets; i++ {
 		sheetname := f.GetSheetName(i)
 
-		if !validateTeamSheet(sheetname, regex) {
+		if !validateSheetName(sheetname, regex) {
 			fmt.Printf("Sheetname: %s with index %s does not match the regexp -> skipping \n", sheetname, strconv.Itoa(i))
 		} else {
 		}
