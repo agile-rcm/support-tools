@@ -93,3 +93,7 @@ modules.xml
 support-tools.iml
 
 tools/Commandlist.MD
+~$TestWorkbook.xlsx
+AnotherSheet.csv
+AnotherSheet2.csv
+GenerateCSVbyIndex.csv

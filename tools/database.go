@@ -5,59 +5,62 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"log"
 	"net/url"
 )
 
-func MigrateDB(dbPassword string, dbServer string, dbUser string, dbType string, dbPort string, dbName string) error {
+// Migrate the database completely up. Uses the files located in "folder".
+func UpDB(dbPassword string, dbServer string, dbUser string, dbType string, dbPort string, dbName string, folder string) error {
 
-	connectionString, err := buildConnectionString(dbPassword, dbServer, dbUser, dbType, dbPort, dbName)
+	connectionString, err := BuildConnectionString(dbPassword, dbServer, dbUser, dbType, dbPort, dbName)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
+	fmt.Println("Up migrating database.")
 	migration, err := migrate.New(
-		"file://migrations",
+		"file://"+folder,
 		connectionString,
 	)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if err := migration.Up(); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	return nil
 }
 
-func DownDB(dbPassword string, dbServer string, dbUser string, dbType string, dbPort string, dbName string) error {
+// Migrate the database completely down. Uses the files located in "folder".
+func DownDB(dbPassword string, dbServer string, dbUser string, dbType string, dbPort string, dbName string, folder string) error {
 
-	connectionString, err := buildConnectionString(dbPassword, dbServer, dbUser, dbType, dbPort, dbName)
-
+	connectionString, err := BuildConnectionString(dbPassword, dbServer, dbUser, dbType, dbPort, dbName)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
+	fmt.Println("Down migrating database.")
 	migration, err := migrate.New(
-		"file://migrations",
+		"file://"+folder,
 		connectionString,
 	)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if err := migration.Down(); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	return nil
 }
 
-func buildConnectionString(dbPassword string, dbServer string, dbUser string, dbType string, dbPort string, dbName string) (string, error) {
+// Build a connection string for the provided database type.
+func BuildConnectionString(dbPassword string, dbServer string, dbUser string, dbType string, dbPort string, dbName string) (string, error) {
 
 	var connectionstring string
 

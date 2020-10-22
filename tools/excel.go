@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/tealeg/xlsx"
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -14,6 +13,7 @@ import (
 type outputer func(s string, n string)
 type outputerIndex func(s string)
 
+// Generate a new CSV file from an Excel sheet identified by filename and sheet index
 func GenerateNewCsvByIndex(filepath string, sheetIndex int, outputf outputerIndex, delimiter string) error {
 
 	xlFile, error := xlsx.OpenFile(filepath)
@@ -45,6 +45,7 @@ func GenerateNewCsvByIndex(filepath string, sheetIndex int, outputf outputerInde
 
 }
 
+// Generate a new CSV file for all sheets in an Excel that match the given regex.
 func GenerateNewCsvAll(filepath string, delimiter string, outputf outputer, regex string) error {
 
 	f, err := excelize.OpenFile(filepath)
@@ -57,11 +58,10 @@ func GenerateNewCsvAll(filepath string, delimiter string, outputf outputer, rege
 
 	fmt.Printf("Sheetcount: %s \n", strconv.Itoa(numSheets))
 
-	for i := 1; i <= numSheets; i++ {
+	for i := 0; i <= numSheets; i++ {
 		sheetname := f.GetSheetName(i)
 
-		//TODO: Was passiert hier? Warum "false &&..." ?
-		if false && !validateSheetName(sheetname, regex) {
+		if !validateSheetName(sheetname, regex) {
 			fmt.Printf("Sheetname: %s with index %s does not match the regexp -> skipping \n", sheetname, strconv.Itoa(i))
 		} else {
 			fmt.Printf("Sheetname: %s with index %s matches regexp -> generating CSV file \n", sheetname, strconv.Itoa(i))
@@ -96,24 +96,24 @@ func GenerateNewCsvAll(filepath string, delimiter string, outputf outputer, rege
 	return nil
 }
 
+// Get a table "col-block" out of a given Excel sheet. The block will contain every row from the given row/col to the next
+// (really) empty row without containing the initially given row/col.
+// Example: [TestName1 TestName2 TestName3 TestName4] while given "Block2" and "Name" as search coords. (Refer to test/TestWorkbook.xlsx)
 func GetBlockByCoords(filepath string, findRow string, findCol string, sheet string) ([]string, error) {
 
 	f, err := excelize.OpenFile(filepath)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 
 	rows, err := f.GetRows(sheet)
 	if err != nil {
-		fmt.Println(err)
-		log.Fatal("cannot open sheet")
+		return nil, err
 	}
 
 	cols, err := f.GetCols(sheet)
 	if err != nil {
-		fmt.Println(err)
-		log.Fatal("cannot open sheet")
+		return nil, err
 	}
 
 	var returnArray []string
@@ -137,7 +137,6 @@ func GetBlockByCoords(filepath string, findRow string, findCol string, sheet str
 
 				if len(innerRow) != 0 {
 					returnArray = append(returnArray, innerRow[targetCol])
-					fmt.Print(innerRow[targetCol], "\n")
 				} else {
 					break
 				}
@@ -151,6 +150,7 @@ func GetBlockByCoords(filepath string, findRow string, findCol string, sheet str
 
 }
 
+// Validate the given sheetname against a given regex
 func validateSheetName(sheetname string, regex string) bool {
 
 	RegExp := regexp.MustCompile(regex)
@@ -158,12 +158,14 @@ func validateSheetName(sheetname string, regex string) bool {
 	return RegExp.MatchString(sheetname)
 }
 
-func GetAllSheetsRegex(filepath string, regex string) (error, []string) {
+// Return a list of sheet names that are already validated against the given regex
+// e.g. find all sheet starting with "SomeName..."
+func GetAllSheetsRegex(filepath string, regex string) ([]string, error) {
 
 	f, err := excelize.OpenFile(filepath)
 	if err != nil {
 		fmt.Println(err)
-		return err, nil
+		return nil, err
 	}
 
 	sheets := f.GetSheetList()
@@ -176,29 +178,5 @@ func GetAllSheetsRegex(filepath string, regex string) (error, []string) {
 		}
 	}
 
-	return nil, validatedSheets
-}
-
-func testForEmptyCells(filepath string, regex string) error {
-	f, err := excelize.OpenFile(filepath)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	numSheets := f.SheetCount
-
-	fmt.Printf("Sheetcount: %s \n", strconv.Itoa(numSheets))
-
-	for i := 1; i <= numSheets; i++ {
-		sheetname := f.GetSheetName(i)
-
-		if !validateSheetName(sheetname, regex) {
-			fmt.Printf("Sheetname: %s with index %s does not match the regexp -> skipping \n", sheetname, strconv.Itoa(i))
-		} else {
-		}
-
-	}
-	return nil
-
+	return validatedSheets, nil
 }
