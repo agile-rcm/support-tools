@@ -9,9 +9,9 @@ import (
 )
 
 // Migrate the database completely up. Uses the files located in "folder".
-func UpDB(dbPassword string, dbServer string, dbUser string, dbType string, dbPort string, dbName string, folder string) error {
+func UpDB(dbPassword string, dbServer string, dbUser string, dbType string, dbPort string, dbName string, folder string, sslMode string) error {
 
-	connectionString, err := BuildConnectionString(dbPassword, dbServer, dbUser, dbType, dbPort, dbName)
+	connectionString, err := BuildConnectionString(dbPassword, dbServer, dbUser, dbType, dbPort, dbName, sslMode)
 
 	if err != nil {
 		return err
@@ -35,9 +35,9 @@ func UpDB(dbPassword string, dbServer string, dbUser string, dbType string, dbPo
 }
 
 // Migrate the database completely down. Uses the files located in "folder".
-func DownDB(dbPassword string, dbServer string, dbUser string, dbType string, dbPort string, dbName string, folder string) error {
+func DownDB(dbPassword string, dbServer string, dbUser string, dbType string, dbPort string, dbName string, folder string, sslMode string) error {
 
-	connectionString, err := BuildConnectionString(dbPassword, dbServer, dbUser, dbType, dbPort, dbName)
+	connectionString, err := BuildConnectionString(dbPassword, dbServer, dbUser, dbType, dbPort, dbName, sslMode)
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func DownDB(dbPassword string, dbServer string, dbUser string, dbType string, db
 }
 
 // Build a connection string for the provided database type.
-func BuildConnectionString(dbPassword string, dbServer string, dbUser string, dbType string, dbPort string, dbName string) (string, error) {
+func BuildConnectionString(dbPassword string, dbServer string, dbUser string, dbType string, dbPort string, dbName string, sslMode string) (string, error) {
 
 	var connectionstring string
 
@@ -74,7 +74,7 @@ func BuildConnectionString(dbPassword string, dbServer string, dbUser string, db
 	switch db_type := dbType; db_type {
 	case "postgres":
 		fmt.Println("Using Postgres DB")
-		connectionstring = dbType + "://" + dbUser + ":" + dbPassword + "@" + dbServer + ":" + dbPort + "/" + dbName + "?sslmode=disable"
+		connectionstring = dbType + "://" + dbUser + ":" + dbPassword + "@" + dbServer + ":" + dbPort + "/" + dbName + "?sslmode=" + sslMode
 	case "mysql":
 		fmt.Println("Using MySQL DB")
 		connectionstring = dbType + "://" + dbUser + ":" + dbPassword + "@" + dbServer + ":" + dbPort + "/" + dbName + "?query"
