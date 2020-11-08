@@ -9,20 +9,28 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 )
 
-func WalkDirAndCreate(userId string, password string, endpoint string, insecure bool, debug bool, directoryName string, confluenceParentPage string, minorEdit bool, timestamp bool, spacekey string) error {
+func WalkDirAndCreate(
+	userId string, password string, endpoint string, insecure bool, debug bool, directoryName string,
+	confluenceParentPage string, minorEdit bool, timestamp bool, spacekey string) error {
 	if directoryName != "/" && directoryName[len(directoryName)-1:] == "/" {
 		directoryName = directoryName[:len(directoryName)-1]
 	}
 
 	a := []string{}
-	WalkDirAndCreateRecursive(userId, password, endpoint, insecure, debug, directoryName, a, 0, confluenceParentPage, minorEdit, timestamp, spacekey)
+	err := WalkDirAndCreateRecursive(
+		userId, password, endpoint, insecure, debug, directoryName, a, 0,
+		confluenceParentPage, minorEdit, timestamp, spacekey)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func WalkDirAndCreateRecursive(userId string, password string, endpoint string, insecure bool, debug bool, directoryName string, dirs []string, counter int, anchestor string, minorEdit bool, timestamp bool, spacekey string) {
+func WalkDirAndCreateRecursive(
+	userId string, password string, endpoint string, insecure bool, debug bool, directoryName string,
+	dirs []string, counter int, anchestor string, minorEdit bool, timestamp bool, spacekey string) error {
 
 	// formattedOutput := fmt.Sprintf("%-60s%-50s%-50s", directoryName, anchestor, dirs)
 	// formattedOutput := fmt.Sprintf("%-60s%-50s", directoryName, anchestor)
@@ -47,7 +55,7 @@ func WalkDirAndCreateRecursive(userId string, password string, endpoint string, 
 				// fmt.Println(formattedOutput)
 
 				pageName := f.Name()
-				contentString := getContentString(newPath+"/"+pageName+".html", timestamp)
+				contentString := getContentStringFromFile(newPath + "/" + pageName + ".html")
 
 				// create page for folder in the source-structure
 				// IMPORTANT: the folder requires a page with the same name in it
@@ -57,11 +65,21 @@ func WalkDirAndCreateRecursive(userId string, password string, endpoint string, 
 				//   | + folderB
 				//     | - folderB.html   <<========
 				//
-				CreatePage(userId, password, endpoint, insecure, debug, anchestor, pageName, contentString, minorEdit, spacekey)
+				err := CreatePage(
+					userId, password, endpoint, insecure, debug,
+					anchestor, pageName, contentString, minorEdit, spacekey, timestamp)
+				if err != nil {
+					return err
+				}
 				// go into this folder
 				anchestorOld := anchestor
 				anchestor = pageName
-				WalkDirAndCreateRecursive(userId, password, endpoint, insecure, debug, newPath, dirs, counter, anchestor, minorEdit, timestamp, spacekey)
+				err = WalkDirAndCreateRecursive(
+					userId, password, endpoint, insecure,
+					debug, newPath, dirs, counter, anchestor, minorEdit, timestamp, spacekey)
+				if err != nil {
+					return err
+				}
 				anchestor = anchestorOld
 			}
 		} else {
@@ -80,18 +98,24 @@ func WalkDirAndCreateRecursive(userId string, password string, endpoint string, 
 			// in the previous step during the folder-Creation (while treversing the folder recursive
 			if strings.Compare(pageName, fileDir) != 0 {
 
-				contentString := getContentString(newPath, timestamp)
+				contentString := getContentStringFromFile(newPath)
 
 				formattedOutput := fmt.Sprintf("%-60s%-50s", anchestor, pageName)
 				fmt.Println(formattedOutput)
 
 				//			formattedOutput = fmt.Sprintf("\n\na/p: %-60s%-50s\n\n", anchestor, pageName)
 				//			fmt.Println(formattedOutput)
-				CreatePage(userId, password, endpoint, insecure, debug, anchestor, pageName, contentString, minorEdit, spacekey)
+				err := CreatePage(
+					userId, password, endpoint, insecure, debug, anchestor, pageName, contentString,
+					minorEdit, spacekey, timestamp)
+				if err != nil {
+					return err
+				}
 			}
 
 		}
 	}
+	return nil
 }
 
 func processed(fileName string, processedDirectories []string) bool {
@@ -104,16 +128,12 @@ func processed(fileName string, processedDirectories []string) bool {
 	return false
 }
 
-func getContentString(pageName string, timestamp bool) string {
+func getContentStringFromFile(fileName string) string {
 
-	contentBuffer, err := ioutil.ReadFile(pageName)
+	contentBuffer, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		log.Fatal(err)
 	}
 	contentString := string(contentBuffer)
-	if timestamp {
-		timeStampTxt := time.Now().String()
-		contentString = "<p>" + timeStampTxt + "</p>" + contentString
-	}
 	return contentString
 }
