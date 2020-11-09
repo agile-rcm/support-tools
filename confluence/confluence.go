@@ -6,13 +6,17 @@ import (
 	"fmt"
 	"github.com/virtomize/confluence-go-api"
 	"log"
+	"time"
 )
 
 func GetUser(userId string, password string, endpoint string, insecure bool, debug bool) error {
 
 	// initialize a new api instance
 	api, err := goconfluence.NewAPI(endpoint, userId, password)
+
+	// TODO - see messages
 	api.VerifyTLS(insecure)
+
 	goconfluence.SetDebug(debug)
 
 	if err != nil {
@@ -36,7 +40,10 @@ func GetUser(userId string, password string, endpoint string, insecure bool, deb
 
 func GetContent(userId string, password string, endpoint string, insecure bool, debug bool, title string, spacekey string) (*goconfluence.ContentSearch, error) {
 	api, err := goconfluence.NewAPI(endpoint, userId, password)
+
+	// TODO - see messages
 	api.VerifyTLS(insecure)
+
 	goconfluence.SetDebug(debug)
 
 	if err != nil {
@@ -54,10 +61,24 @@ func GetContent(userId string, password string, endpoint string, insecure bool, 
 	return c, nil
 }
 
-func CreatePage(userId string, password string, endpoint string, insecure bool, debug bool, parentTitle string, title string, newPageContent string, minorEdit bool, spacekey string) error {
+func CreatePage(
+	userId string,
+	password string,
+	endpoint string,
+	insecure bool,
+	debug bool,
+	parentTitle string,
+	title string,
+	newPageContent string,
+	minorEdit bool,
+	spacekey string,
+	timestamp bool) error {
 
 	api, err := goconfluence.NewAPI(endpoint, userId, password)
+
+	// TODO - see messages
 	api.VerifyTLS(insecure)
+
 	goconfluence.SetDebug(debug)
 
 	if err != nil {
@@ -89,6 +110,8 @@ func CreatePage(userId string, password string, endpoint string, insecure bool, 
 		log.Fatal(err)
 	}
 
+	newPageContent = getContentStringWithTimestamp(newPageContent, timestamp)
+
 	if len(pageTitle.Results) == 0 {
 
 		result, err := api.CreateContent(&goconfluence.Content{
@@ -115,14 +138,16 @@ func CreatePage(userId string, password string, endpoint string, insecure bool, 
 		})
 
 		if err != nil {
-			log.Fatal(err)
 			fmt.Printf("%+v\n", result)
+			log.Fatal(err)
 		}
 
 	} else {
 
 		pageId := pageTitle.Results[0].ID
 		history, err := api.GetHistory(pageId)
+
+		// TODO - see messages
 		newVersion := history.LastUpdated.Number
 
 		data := &goconfluence.Content{
@@ -152,10 +177,19 @@ func CreatePage(userId string, password string, endpoint string, insecure bool, 
 
 		cc, err := api.UpdateContent(data)
 		if err != nil {
-			log.Fatal(err)
 			fmt.Printf("%+v\n", cc)
+			log.Fatal(err)
 		}
 
 	}
 	return nil
+}
+
+func getContentStringWithTimestamp(contentString string, timestamp bool) string {
+
+	if timestamp {
+		timeStampTxt := time.Now().String()
+		contentString = "<p>" + timeStampTxt + "</p>" + contentString
+	}
+	return contentString
 }
