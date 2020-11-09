@@ -2,80 +2,82 @@ package tools
 
 import (
 	"fmt"
-	"git.agiletech.de/AgileRCM/support-tools/context"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"log"
 	"net/url"
 )
 
-func MigrateDB(ctx context.Context) error {
+// Migrate the database completely up. Uses the files located in "folder".
+func UpDB(dbPassword string, dbServer string, dbUser string, dbType string, dbPort string, dbName string, folder string, sslMode string) error {
 
-	connectionString, err := buildConnectionString(ctx)
+	connectionString, err := BuildConnectionString(dbPassword, dbServer, dbUser, dbType, dbPort, dbName, sslMode)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
+	fmt.Println("Up migrating database.")
 	migration, err := migrate.New(
-		"file://migrations",
+		"file://"+folder,
 		connectionString,
 	)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if err := migration.Up(); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	return nil
 }
 
-func DownDB(ctx context.Context) error {
+// Migrate the database completely down. Uses the files located in "folder".
+func DownDB(dbPassword string, dbServer string, dbUser string, dbType string, dbPort string, dbName string, folder string, sslMode string) error {
 
-	connectionString, err := buildConnectionString(ctx)
-
+	connectionString, err := BuildConnectionString(dbPassword, dbServer, dbUser, dbType, dbPort, dbName, sslMode)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
+	fmt.Println("Down migrating database.")
 	migration, err := migrate.New(
-		"file://migrations",
+		"file://"+folder,
 		connectionString,
 	)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if err := migration.Down(); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	return nil
 }
 
-func buildConnectionString(ctx context.Context) (string, error) {
+// Build a connection string for the provided database type.
+func BuildConnectionString(dbPassword string, dbServer string, dbUser string, dbType string, dbPort string, dbName string, sslMode string) (string, error) {
 
 	var connectionstring string
 
-	dbpassword := fmt.Sprint(url.PathEscape(ctx.DB_Password))
-	dbserver := fmt.Sprint(url.PathEscape(ctx.DB_Server))
-	dbuser := fmt.Sprint(url.PathEscape(ctx.DB_User))
-	dbtype := fmt.Sprint(url.PathEscape(ctx.DB_Type))
-	dbport := fmt.Sprint(url.PathEscape(ctx.DB_Port))
-	dbname := fmt.Sprint(url.PathEscape(ctx.DB_Name))
+	dbPassword = fmt.Sprint(url.PathEscape(dbPassword))
+	dbServer = fmt.Sprint(url.PathEscape(dbServer))
+	dbUser = fmt.Sprint(url.PathEscape(dbUser))
+	dbType = fmt.Sprint(url.PathEscape(dbType))
+	dbPort = fmt.Sprint(url.PathEscape(dbPort))
+	dbName = fmt.Sprint(url.PathEscape(dbName))
 
-	switch db_type := ctx.DB_Type; db_type {
+	switch db_type := dbType; db_type {
 	case "postgres":
 		fmt.Println("Using Postgres DB")
-		connectionstring = dbtype + "://" + dbuser + ":" + dbpassword + "@" + dbserver + ":" + dbport + "/" + dbname + "?sslmode=disable"
+		connectionstring = dbType + "://" + dbUser + ":" + dbPassword + "@" + dbServer + ":" + dbPort + "/" + dbName + "?sslmode=" + sslMode
 	case "mysql":
 		fmt.Println("Using MySQL DB")
-		connectionstring = dbtype + "://" + dbuser + ":" + dbpassword + "@" + dbserver + ":" + dbport + "/" + dbname + "?query"
+		connectionstring = dbType + "://" + dbUser + ":" + dbPassword + "@" + dbServer + ":" + dbPort + "/" + dbName + "?query"
 	default:
 		fmt.Println("Cannot build connection string!")
 		return "", fmt.Errorf("Cannot build connection string!")

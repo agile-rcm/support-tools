@@ -2,7 +2,6 @@ package vault
 
 import (
 	"fmt"
-	"git.agiletech.de/AgileRCM/support-tools/context"
 	"github.com/hashicorp/vault/api"
 	"net/http"
 	"time"
@@ -26,15 +25,26 @@ type ToolCredentials struct {
 	}
 }
 
+type vaultContext struct {
+	userId   string
+	password string
+	endpoint string
+}
+
 var httpClient = &http.Client{
 	Timeout: 10 * time.Second,
 }
 
-func FillToolCredentials(ctx context.Context) *ToolCredentials {
+func FillToolCredentials(userId string, password string, endpoint string) *ToolCredentials {
+
+	vaultContext := new(vaultContext)
+	vaultContext.userId = userId
+	vaultContext.password = password
+	vaultContext.endpoint = endpoint
 
 	creds := new(ToolCredentials)
 
-	client := createClient(ctx)
+	client := createClient(*vaultContext)
 
 	getSecretConfluence(*client, creds)
 	getSecretJira(*client, creds)
@@ -80,13 +90,13 @@ func getSecretJira(client api.Client, creds *ToolCredentials) {
 
 }
 
-func createClient(ctx context.Context) *api.Client {
+func createClient(ctx vaultContext) *api.Client {
 	token, err := userpassLogin(ctx)
 	if err != nil {
 		panic(err)
 	}
 
-	client, err := api.NewClient(&api.Config{Address: ctx.Vault, HttpClient: httpClient})
+	client, err := api.NewClient(&api.Config{Address: ctx.endpoint, HttpClient: httpClient})
 	if err != nil {
 		panic(err)
 	}
@@ -95,18 +105,18 @@ func createClient(ctx context.Context) *api.Client {
 	return client
 }
 
-func userpassLogin(ctx context.Context) (string, error) {
+func userpassLogin(ctx vaultContext) (string, error) {
 	// create a vault client
-	client, err := api.NewClient(&api.Config{Address: ctx.Vault, HttpClient: httpClient})
+	client, err := api.NewClient(&api.Config{Address: ctx.endpoint, HttpClient: httpClient})
 	if err != nil {
 		return "", err
 	}
 
 	// to pass the password
 	options := map[string]interface{}{
-		"password": ctx.Password,
+		"password": ctx.password,
 	}
-	path := fmt.Sprintf("auth/ldap/login/%s", ctx.UserId)
+	path := fmt.Sprintf("auth/ldap/login/%s", ctx.userId)
 
 	// PUT call to get a token
 	secret, err := client.Logical().Write(path, options)

@@ -4,17 +4,20 @@ package confluence
 
 import (
 	"fmt"
-	"git.agiletech.de/AgileRCM/support-tools/context"
 	"github.com/virtomize/confluence-go-api"
 	"log"
+	"time"
 )
 
-func GetUser(ctx context.Context) error {
+func GetUser(userId string, password string, endpoint string, insecure bool, debug bool) error {
 
 	// initialize a new api instance
-	api, err := goconfluence.NewAPI(ctx.Endpoint, ctx.UserId, ctx.Password)
-	api.VerifyTLS(ctx.Insecure)
-	goconfluence.SetDebug(ctx.Debug)
+	api, err := goconfluence.NewAPI(endpoint, userId, password)
+
+	// TODO - see messages
+	api.VerifyTLS(insecure)
+
+	goconfluence.SetDebug(debug)
 
 	if err != nil {
 		log.Fatal(err)
@@ -35,17 +38,20 @@ func GetUser(ctx context.Context) error {
 	return nil
 }
 
-func GetContent(ctx context.Context, title string) (*goconfluence.ContentSearch, error) {
-	api, err := goconfluence.NewAPI(ctx.Endpoint, ctx.UserId, ctx.Password)
-	api.VerifyTLS(ctx.Insecure)
-	goconfluence.SetDebug(ctx.Debug)
+func GetContent(userId string, password string, endpoint string, insecure bool, debug bool, title string, spacekey string) (*goconfluence.ContentSearch, error) {
+	api, err := goconfluence.NewAPI(endpoint, userId, password)
+
+	// TODO - see messages
+	api.VerifyTLS(insecure)
+
+	goconfluence.SetDebug(debug)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	c, err := api.GetContent(goconfluence.ContentQuery{
-		SpaceKey: ctx.Spacekey,
+		SpaceKey: spacekey,
 		Title:    title,
 	})
 	if err != nil {
@@ -55,17 +61,31 @@ func GetContent(ctx context.Context, title string) (*goconfluence.ContentSearch,
 	return c, nil
 }
 
-func CreatePage(ctx context.Context, parentTitle string, title string, newPageContent string, minorEdit bool) error {
+func CreatePage(
+	userId string,
+	password string,
+	endpoint string,
+	insecure bool,
+	debug bool,
+	parentTitle string,
+	title string,
+	newPageContent string,
+	minorEdit bool,
+	spacekey string,
+	timestamp bool) error {
 
-	api, err := goconfluence.NewAPI(ctx.Endpoint, ctx.UserId, ctx.Password)
-	api.VerifyTLS(ctx.Insecure)
-	goconfluence.SetDebug(ctx.Debug)
+	api, err := goconfluence.NewAPI(endpoint, userId, password)
+
+	// TODO - see messages
+	api.VerifyTLS(insecure)
+
+	goconfluence.SetDebug(debug)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	pageParentTitle, err := GetContent(ctx, parentTitle)
+	pageParentTitle, err := GetContent(userId, password, endpoint, insecure, debug, parentTitle, spacekey)
 
 	if err != nil {
 		log.Fatal(err)
@@ -82,13 +102,15 @@ func CreatePage(ctx context.Context, parentTitle string, title string, newPageCo
 	parentTitleId := pageParentTitle.Results[0].ID
 
 	pageTitle, err := api.GetContent(goconfluence.ContentQuery{
-		SpaceKey: ctx.Spacekey,
+		SpaceKey: spacekey,
 		Title:    title,
 	})
 
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	newPageContent = getContentStringWithTimestamp(newPageContent, timestamp)
 
 	if len(pageTitle.Results) == 0 {
 
@@ -111,19 +133,21 @@ func CreatePage(ctx context.Context, parentTitle string, title string, newPageCo
 				MinorEdit: true,
 			},
 			Space: goconfluence.Space{
-				Key: ctx.Spacekey,
+				Key: spacekey,
 			},
 		})
 
 		if err != nil {
-			log.Fatal(err)
 			fmt.Printf("%+v\n", result)
+			log.Fatal(err)
 		}
 
 	} else {
 
 		pageId := pageTitle.Results[0].ID
 		history, err := api.GetHistory(pageId)
+
+		// TODO - see messages
 		newVersion := history.LastUpdated.Number
 
 		data := &goconfluence.Content{
@@ -147,16 +171,25 @@ func CreatePage(ctx context.Context, parentTitle string, title string, newPageCo
 				MinorEdit: minorEdit,
 			},
 			Space: goconfluence.Space{
-				Key: ctx.Spacekey, // Space
+				Key: spacekey, // Space
 			},
 		}
 
 		cc, err := api.UpdateContent(data)
 		if err != nil {
-			log.Fatal(err)
 			fmt.Printf("%+v\n", cc)
+			log.Fatal(err)
 		}
 
 	}
 	return nil
+}
+
+func getContentStringWithTimestamp(contentString string, timestamp bool) string {
+
+	if timestamp {
+		timeStampTxt := time.Now().String()
+		contentString = "<p>" + timeStampTxt + "</p>" + contentString
+	}
+	return contentString
 }
