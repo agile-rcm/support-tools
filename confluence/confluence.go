@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/virtomize/confluence-go-api"
 	"log"
+	"os"
 	"time"
 )
 
@@ -182,6 +183,103 @@ func CreatePage(
 		}
 
 	}
+	return nil
+}
+
+func CreateAttachment(userId string, password string, endpoint string, insecure bool, debug bool, filepath string, pageTitle string, spaceKey string, attachmentName string) error {
+
+	// Open API
+	api, err := goconfluence.NewAPI(endpoint,userId,password)
+
+	if err != nil {
+		return err
+	}
+
+	api.VerifyTLS(insecure)
+	goconfluence.SetDebug(debug)
+
+	// Search Title ID
+	pageParentTitle, err := GetContent(userId, password, endpoint, insecure, debug, pageTitle, spaceKey)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(pageParentTitle.Results) == 0 {
+		log.Fatal("Error : Page \"" + pageTitle + "\" not found!")
+	}
+
+	if len(pageParentTitle.Results) > 1 {
+		log.Fatal("Error : Page exists more than one times!")
+	}
+
+	pageTitleId := pageParentTitle.Results[0].ID
+
+	// Rename File
+	file, err := os.Open(filepath)
+
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	_, err = api.UploadAttachment(pageTitleId, attachmentName, file)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteAttachment(userId string, password string, endpoint string, insecure bool, debug bool, pageTitle string, spaceKey string, attachmentName string) error {
+
+	// Open API
+	api, err := goconfluence.NewAPI(endpoint,userId,password)
+
+	if err != nil {
+		return err
+	}
+
+	api.VerifyTLS(insecure)
+	goconfluence.SetDebug(debug)
+
+	// Search Title ID
+	pageParentTitle, err := GetContent(userId, password, endpoint, insecure, debug, pageTitle, spaceKey)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(pageParentTitle.Results) == 0 {
+		log.Fatal("Error : Page \"" + pageTitle + "\" not found!")
+	}
+
+	if len(pageParentTitle.Results) > 1 {
+		log.Fatal("Error : Page exists more than one times!")
+	}
+
+	pageTitleId := pageParentTitle.Results[0].ID
+
+	attachments, err := api.GetAttachments(pageTitleId)
+
+	for _, result := range attachments.Results{
+
+		if result.Title == attachmentName {
+
+			_, err := api.DelContent(result.ID)
+
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+	}
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
