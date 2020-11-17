@@ -157,3 +157,15 @@ func TestGenerateNewCsvByIndex(t *testing.T) {
 		t.Errorf("Error testing CSV file: %s", err)
 	}
 }
+
+func TestGetLinesByKeyword(t *testing.T) {
+	result, err := tools.GetLinesByKeyword("test/TestWorkbook.xlsx", "Testdata", 3, "Testsheet")
+
+	if err != nil {
+		fmt.Println(err)
+		t.Fail()
+	}
+
+	fmt.Println(result)
+
+}

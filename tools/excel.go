@@ -180,3 +180,33 @@ func GetAllSheetsRegex(filepath string, regex string) ([]string, error) {
 
 	return validatedSheets, nil
 }
+
+func GetLinesByKeyword(filepath string, keyword string, rowlenght int, sheet string) ([][]string ,error) {
+	f, err := excelize.OpenFile(filepath)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := f.GetRows(sheet)
+	if err != nil {
+		return nil, err
+	}
+
+	effectiverows := [][]string{}
+
+	for _, row := range rows {
+
+		if row != nil && row[0] != "" && row[0] == keyword{
+			thisrow := []string{}
+			for i := 1; i <= rowlenght; i++ {
+				thisrow = append(thisrow, row[i])
+			}
+
+			effectiverows = append(effectiverows, thisrow)
+		}
+
+	}
+
+
+	return effectiverows, nil
+}
