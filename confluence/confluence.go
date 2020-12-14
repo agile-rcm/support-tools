@@ -283,6 +283,54 @@ func DeleteAttachment(userId string, password string, endpoint string, insecure 
 	return nil
 }
 
+func AddLabel(userId string, password string, endpoint string, insecure bool, debug bool, pageTitle string, spaceKey string, label string) error {
+
+	labelToAdd := goconfluence.Label{
+		Prefix: "global",
+		Name:   label,
+		Label:  label,
+	}
+
+	var labels []goconfluence.Label
+
+	labels = append(labels, labelToAdd)
+
+	// Open API
+	api, err := goconfluence.NewAPI(endpoint,userId,password)
+
+	if err != nil {
+		return err
+	}
+
+	api.VerifyTLS(insecure)
+	goconfluence.SetDebug(debug)
+
+	// Search Title ID
+	pageParentTitle, err := GetContent(userId, password, endpoint, insecure, debug, pageTitle, spaceKey)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(pageParentTitle.Results) == 0 {
+		log.Fatal("Error : Page \"" + pageTitle + "\" not found!")
+	}
+
+	if len(pageParentTitle.Results) > 1 {
+		log.Fatal("Error : Page exists more than one times!")
+	}
+
+	pageTitleId := pageParentTitle.Results[0].ID
+
+	_, err = api.AddLabels(pageTitleId, &labels)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func getContentStringWithTimestamp(contentString string, timestamp bool) string {
 
 	if timestamp {
