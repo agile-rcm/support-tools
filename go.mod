@@ -9,6 +9,5 @@ require (
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/tealeg/xlsx v1.0.5
 	github.com/urfave/cli v1.22.4
-	github.com/valyala/fasthttp v1.18.0 // indirect
 	github.com/virtomize/confluence-go-api v1.2.5
 )

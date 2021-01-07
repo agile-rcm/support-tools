@@ -6,7 +6,6 @@ import (
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/tealeg/xlsx"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -56,15 +55,15 @@ func GenerateNewCsvAll(filepath string, delimiter string, outputf outputer, rege
 
 	numSheets := f.SheetCount
 
-	fmt.Printf("Sheetcount: %s \n", strconv.Itoa(numSheets))
+	//fmt.Printf("Sheetcount: %s \n", strconv.Itoa(numSheets))
 
 	for i := 0; i <= numSheets; i++ {
 		sheetname := f.GetSheetName(i)
 
 		if !validateSheetName(sheetname, regex) {
-			fmt.Printf("Sheetname: %s with index %s does not match the regexp -> skipping \n", sheetname, strconv.Itoa(i))
+			//fmt.Printf("Sheetname: %s with index %s does not match the regexp -> skipping \n", sheetname, strconv.Itoa(i))
 		} else {
-			fmt.Printf("Sheetname: %s with index %s matches regexp -> generating CSV file \n", sheetname, strconv.Itoa(i))
+			//fmt.Printf("Sheetname: %s with index %s matches regexp -> generating CSV file \n", sheetname, strconv.Itoa(i))
 
 			xlFile, error := xlsx.OpenFile(filepath)
 			if error != nil {
@@ -82,7 +81,7 @@ func GenerateNewCsvAll(filepath string, delimiter string, outputf outputer, rege
 							vals = append(vals, err.Error())
 						}
 
-						fmt.Printf("Read Value: %s \n", str)
+						//fmt.Printf("Read Value: %s \n", str)
 						vals = append(vals, fmt.Sprintf("%q", str))
 					}
 					outputf(strings.Join(vals, delimiter)+"\n", sheetname)
