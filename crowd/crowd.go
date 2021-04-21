@@ -4,9 +4,9 @@ import (
 	"github.com/agile-rcm/crowd-go"
 )
 
-func AddUserToGroup(crowdUrl, crowdApp, crowdPassword, user, group string) error {
+func AddUserToGroup(crowdUrl, crowdApp, crowdPassword, user, group string, skipVerify bool) error {
 
-	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword)
+	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword, skipVerify)
 
 	if err != nil {
 		return err
@@ -22,8 +22,8 @@ func AddUserToGroup(crowdUrl, crowdApp, crowdPassword, user, group string) error
 
 }
 
-func CreateGroup(crowdUrl, crowdApp, crowdPassword, groupName, groupDescription string, isActive bool) error {
-	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword)
+func CreateGroup(crowdUrl, crowdApp, crowdPassword, groupName, groupDescription string, skipVerify, isActive bool) error {
+	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword, skipVerify)
 
 	if err != nil {
 		return err
@@ -39,8 +39,8 @@ func CreateGroup(crowdUrl, crowdApp, crowdPassword, groupName, groupDescription 
 
 }
 
-func RemoveGroup(crowdUrl, crowdApp, crowdPassword, groupName string) error {
-	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword)
+func RemoveGroup(crowdUrl, crowdApp, crowdPassword, groupName string, skipVerify bool) error {
+	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword, skipVerify)
 
 	if err != nil {
 		return err
@@ -56,8 +56,8 @@ func RemoveGroup(crowdUrl, crowdApp, crowdPassword, groupName string) error {
 
 }
 
-func AddChildGroupMembership(crowdUrl, crowdApp, crowdPassword, parentGroupName, childGroupName string) error {
-	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword)
+func AddChildGroupMembership(crowdUrl, crowdApp, crowdPassword, parentGroupName, childGroupName string, skipVerify bool) error {
+	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword, skipVerify)
 
 	if err != nil {
 		return err
@@ -73,8 +73,8 @@ func AddChildGroupMembership(crowdUrl, crowdApp, crowdPassword, parentGroupName,
 
 }
 
-func AddParentGroupMembership(crowdUrl, crowdApp, crowdPassword, parentGroupName, childGroupName string) error {
-	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword)
+func AddParentGroupMembership(crowdUrl, crowdApp, crowdPassword, parentGroupName, childGroupName string, skipVerify bool) error {
+	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword, skipVerify)
 
 	if err != nil {
 		return err
@@ -90,9 +90,9 @@ func AddParentGroupMembership(crowdUrl, crowdApp, crowdPassword, parentGroupName
 
 }
 
-func AddUser(crowdUrl, crowdApp, crowdPassword, userName, userPassword, userFirstName, userLastName, userDisplayName, userEmail string, isActive bool) error {
+func AddUser(crowdUrl, crowdApp, crowdPassword, userName, userPassword, userFirstName, userLastName, userDisplayName, userEmail string, skipVerify, isActive bool) error {
 
-	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword)
+	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword, skipVerify)
 
 	if err != nil {
 		return err
@@ -108,9 +108,9 @@ func AddUser(crowdUrl, crowdApp, crowdPassword, userName, userPassword, userFirs
 
 }
 
-func GetUser(crowdUrl, crowdApp, crowdPassword, userName string) (*crowd.User, error) {
+func GetUser(crowdUrl, crowdApp, crowdPassword, userName string, skipVerify bool) (*crowd.User, error) {
 
-	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword)
+	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword, skipVerify)
 
 	if err != nil {
 		return nil, err
@@ -126,9 +126,9 @@ func GetUser(crowdUrl, crowdApp, crowdPassword, userName string) (*crowd.User, e
 
 }
 
-func UpdateUser(crowdUrl, crowdApp, crowdPassword, userName, userFirstName, userLastName, userDisplayName, userEmail string, isActive bool) error {
+func UpdateUser(crowdUrl, crowdApp, crowdPassword, userName, userFirstName, userLastName, userDisplayName, userEmail string, skipVerify, isActive bool) error {
 
-	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword)
+	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword, skipVerify)
 
 	if err != nil {
 		return err
@@ -144,8 +144,8 @@ func UpdateUser(crowdUrl, crowdApp, crowdPassword, userName, userFirstName, user
 
 }
 
-func RemoveUser(crowdUrl, crowdApp, crowdPassword, userName string) error {
-	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword)
+func RemoveUser(crowdUrl, crowdApp, crowdPassword, userName string, skipVerify bool) error {
+	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword, skipVerify)
 
 	if err != nil {
 		return err
@@ -161,9 +161,9 @@ func RemoveUser(crowdUrl, crowdApp, crowdPassword, userName string) error {
 
 }
 
-func GetUserAttributes(crowdUrl, crowdApp, crowdPassword, userName string) (*crowd.Attributes, error) {
+func GetUserAttributes(crowdUrl, crowdApp, crowdPassword, userName string, skipVerify bool) (*crowd.Attributes, error) {
 
-	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword)
+	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword, skipVerify)
 
 	if err != nil {
 		return nil, err
@@ -179,9 +179,9 @@ func GetUserAttributes(crowdUrl, crowdApp, crowdPassword, userName string) (*cro
 
 }
 
-func StoreUserAttribute(crowdUrl, crowdApp, crowdPassword, userName, attributeName, attributeValue string) error {
+func StoreUserAttribute(crowdUrl, crowdApp, crowdPassword, userName, attributeName, attributeValue string, skipVerify bool) error {
 
-	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword)
+	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword, skipVerify)
 
 	if err != nil {
 		return err
@@ -206,8 +206,8 @@ func StoreUserAttribute(crowdUrl, crowdApp, crowdPassword, userName, attributeNa
 
 }
 
-func RemoveUserAttribute(crowdUrl, crowdApp, crowdPassword, userName, attributeName string) error {
-	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword)
+func RemoveUserAttribute(crowdUrl, crowdApp, crowdPassword, userName, attributeName string, skipVerify bool) error {
+	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword, skipVerify)
 
 	if err != nil {
 		return err
@@ -223,8 +223,8 @@ func RemoveUserAttribute(crowdUrl, crowdApp, crowdPassword, userName, attributeN
 
 }
 
-func RemoveUserFromGroup(crowdUrl, crowdApp, crowdPassword, userName, groupName string) error {
-	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword)
+func RemoveUserFromGroup(crowdUrl, crowdApp, crowdPassword, userName, groupName string, skipVerify bool) error {
+	api, err := crowd.NewAPI(crowdUrl, crowdApp, crowdPassword, skipVerify)
 
 	if err != nil {
 		return err
