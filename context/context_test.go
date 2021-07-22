@@ -2,7 +2,7 @@ package context_test
 
 import (
 	"fmt"
-	"git.agiletech.de/AgileRCM/support-tools/context"
+	"github.com/agile-rcm/support-tools/context"
 )
 
 func ExampleNewContext() {

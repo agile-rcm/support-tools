@@ -2,7 +2,7 @@ package tools_test
 
 import (
 	"fmt"
-	"git.agiletech.de/AgileRCM/support-tools/tools"
+	"github.com/agile-rcm/support-tools/tools"
 )
 
 func ExampleLevenshtein() {

@@ -1,4 +1,4 @@
-module git.agiletech.de/AgileRCM/support-tools
+module github.com/agile-rcm/support-tools
 
 go 1.15
 
