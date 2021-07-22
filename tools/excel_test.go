@@ -3,7 +3,7 @@ package tools_test
 import (
 	"bufio"
 	"fmt"
-	"git.agiletech.de/AgileRCM/support-tools/tools"
+	"github.com/agile-rcm/support-tools/tools"
 	"os"
 	"testing"
 )
